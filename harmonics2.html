@@ -1,0 +1,102 @@
+<html>
+
+<head>
+<style>
+
+</style>
+</head>
+
+<script>
+function createNote(FREQ,harmonics)	{
+	var real = new Float32Array(harmonics+1);
+	var imag = new Float32Array(harmonics+1);
+	
+	var ac = new AudioContext();
+	var osc = ac.createOscillator();
+	
+	osc.frequency.setValueAtTime(FREQ, ac.currentTime); // value in hertz
+	real[0] = 0;
+	imag[0] = 0;
+
+	for (var i=1; i<=harmonics; i++) { 
+		real[i] = 1/harmonics;
+	}
+
+	var wave = ac.createPeriodicWave(real, imag, {disableNormalization: true});
+	
+	osc.setPeriodicWave(wave);
+	osc.connect(ac.destination);
+	
+	osc.start();
+	osc.stop(1);	
+}
+
+
+// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Traversing_an_HTML_table_with_JavaScript_and_DOM_Interfaces
+function generate_table(num_rows,num_cells,FREQ) {
+  // get the reference for the body
+  var body = document.getElementsByTagName("body")[0];
+
+  // creates a <table> element and a <tbody> element
+  var tbl = document.createElement("table");
+  var tblBody = document.createElement("tbody");
+
+  // creating all cells
+  for (var i = 0; i < num_cells; i++) {
+    // creates a table row
+    var row = document.createElement("tr");
+
+    for (var j = 0; j < num_rows; j++) {
+      // Create a <td> element and a text node, make the text
+      // node the contents of the <td>, and put the <td> at
+      // the end of the table row
+	  
+      var cell = document.createElement("td");
+	  cell.className = "class_cell";
+	  cell.width="10"
+	  
+	  var button=document.createElement("button");
+	  button.innerHTML = "PLAY";	
+	  button.data =[i+1,Math.pow(2,j)]
+	  button.onclick = function(){ 
+		createNote(55 * this.data[1],this.data[0]);
+		}
+	  
+
+	  var cellText;
+	  for (var k=0;k<=i;k++) {
+	    //cellText = document.createTextNode("f"+i+"\n");
+		cellText=document.createTextNode("FREQ_"+((FREQ*(k+1))*Math.pow(2,j+1)).toFixed(2)+" ");
+		cell.appendChild(cellText);		
+	  }
+	  
+	    //var cellText = document.createTextNode("C"+i+"R"+j);
+		//cell.appendChild(cellText);
+		cell.appendChild(button);
+
+      row.appendChild(cell);
+    }
+
+    // add the row to the end of the table body
+    tblBody.appendChild(row);
+  }
+
+  // put the <tbody> in the <table>
+  tbl.appendChild(tblBody);
+  // appends <table> into <body>
+  body.appendChild(tbl);
+  // sets the border attribute of tbl to 2;
+  tbl.setAttribute("border", "2");
+}
+</script>
+
+<body onload="generate_table(9,9,27.5)">
+
+	<audio src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/858/outfoxing.mp3" crossorigin="anonymous" >
+	</audio>
+
+
+<!-- <input type="button" value="Generate a table." onclick="generate_table(9,20,27.5)"> -->
+
+</body>
+</html>
