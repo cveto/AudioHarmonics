@@ -7,7 +7,7 @@
 </head>
 
 <script>
-function createNote(FREQ,harmonics)	{
+function createNote(FREQ,harmonics,duration)	{
 	var real = new Float32Array(harmonics+1);
 	var imag = new Float32Array(harmonics+1);
 	
@@ -28,75 +28,84 @@ function createNote(FREQ,harmonics)	{
 	osc.connect(ac.destination);
 	
 	osc.start();
-	osc.stop(1);	
+	osc.stop(duration);	
 }
 
-
+// Cells part code taken from:
 // https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Traversing_an_HTML_table_with_JavaScript_and_DOM_Interfaces
-function generate_table(num_rows,num_cells,FREQ) {
+function generate_table(num_rows,num_columns,FREQ,duration) {
   // get the reference for the body
   var body = document.getElementsByTagName("body")[0];
 
   // creates a <table> element and a <tbody> element
   var tbl = document.createElement("table");
+ 
   var tblBody = document.createElement("tbody");
 
-  // creating all cells
-  for (var i = 0; i < num_cells; i++) {
-    // creates a table row
-    var row = document.createElement("tr");
+	// cells for naming
+	var row = document.createElement("tr"); 
+	for (var i=0; i < num_columns; i++) {
+		var cell = document.createElement("td");
+		cell.style.textAlign = "center"
+		var cellText = document.createTextNode("A"+i);
+		
+		cell.appendChild(cellText);	
+		row.appendChild(cell);
+		tblBody.appendChild(row);	
+	}	
 
-    for (var j = 0; j < num_rows; j++) {
-      // Create a <td> element and a text node, make the text
-      // node the contents of the <td>, and put the <td> at
-      // the end of the table row
-	  
-      var cell = document.createElement("td");
-	  cell.className = "class_cell";
-	  cell.width="10"
-	  
-	  var button=document.createElement("button");
-	  button.innerHTML = "PLAY";	
-	  button.data =[i+1,Math.pow(2,j)]
-	  button.onclick = function(){ 
-		createNote(55 * this.data[1],this.data[0]);
+	
+	// creating cells with audio
+	for (var i = 0; i < num_columns; i++) {
+
+		var row = document.createElement("tr");
+	
+		
+		// CREATING ROWS
+		for (var j = 0; j < num_rows; j++) {
+			// Create a <td> element and a text node, make the text
+			// node the contents of the <td>, and put the <td> at
+			// the end of the table row
+	
+			var cell = document.createElement("td");
+			cell.className = "class_cell";
+			cell.width="10"
+	
+			var button=document.createElement("button");
+			button.innerHTML = "PLAY";	
+			button.style = "float: center"	  
+			button.data =[i+1,Math.pow(2,j)]
+	
+			button.onclick = function(){ 
+			createNote(55 * this.data[1],this.data[0],duration);
+			}
+		
+			var cellText;
+			for (var k=0;k<=i;k++) {
+				cellText=document.createTextNode(" "+((FREQ*(k+1))*Math.pow(2,j+1)).toFixed(2)+"_Hz ");
+				cell.appendChild(cellText);		
+			}
+			cell.appendChild(button);
+			
+			row.appendChild(cell);
 		}
-	  
 
-	  var cellText;
-	  for (var k=0;k<=i;k++) {
-	    //cellText = document.createTextNode("f"+i+"\n");
-		cellText=document.createTextNode("FREQ_"+((FREQ*(k+1))*Math.pow(2,j+1)).toFixed(2)+" ");
-		cell.appendChild(cellText);		
-	  }
-	  
-	    //var cellText = document.createTextNode("C"+i+"R"+j);
-		//cell.appendChild(cellText);
-		cell.appendChild(button);
+		// add the row to the end of the table body
+		tblBody.appendChild(row);
+	}
 
-      row.appendChild(cell);
-    }
-
-    // add the row to the end of the table body
-    tblBody.appendChild(row);
-  }
-
-  // put the <tbody> in the <table>
-  tbl.appendChild(tblBody);
-  // appends <table> into <body>
-  body.appendChild(tbl);
-  // sets the border attribute of tbl to 2;
-  tbl.setAttribute("border", "2");
+	// put the <tbody> in the <table>
+	tbl.appendChild(tblBody);
+	
+	// appends <table> into <body>
+	body.appendChild(tbl);
+	
+	// sets the border attribute of tbl to 2;
+	tbl.setAttribute("border", "2");
 }
 </script>
 
-<body onload="generate_table(9,9,27.5)">
-
-	<audio src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/858/outfoxing.mp3" crossorigin="anonymous" >
-	</audio>
-
-
-<!-- <input type="button" value="Generate a table." onclick="generate_table(9,20,27.5)"> -->
+<body onload="generate_table(9,9,27.5,0.2)">
 
 </body>
 </html>
